@@ -42,43 +42,6 @@
   #:use-module (guix build-system trivial)
   #:use-module (srfi srfi-1))
 
-(define-public python-flask
-(package
-  (name "python-flask")
-  (version "0.10.1")
-  (source
-    (origin
-      (method url-fetch)
-      (uri (pypi-uri "Flask" version))
-      (sha256
-        (base32
-          "0wrkavjdjndknhp8ya8j850jq7a1cli4g5a93mg8nh1xz2gq50sc"))))
-  (build-system python-build-system)
-  (inputs
-   `(("python-setuptools" ,python-setuptools)
-     ; ("python-itsdangerous" ,python-itsdangerous)
-     ; ("python-jinja2" ,python-jinja2)
-     ; ("python-werkzeug" ,python-werkzeug)
-     ))
-  (propagated-inputs
-   `(
-     ("python-itsdangerous" ,python-itsdangerous)
-     ("python-jinja2" ,python-jinja2)
-     ("python-werkzeug" ,python-werkzeug)
-     ))
-  
-  (arguments
-   `(#:tests? #f)) ; No tests
-  (home-page "http://github.com/mitsuhiko/flask/")
-  (synopsis
-    "A microframework based on Werkzeug, Jinja2 and good intentions")
-  (description
-    "A microframework based on Werkzeug, Jinja2 and good intentions")
-  (license license:bsd-3)))
-
-(define-public python2-flask
-  (package-with-python2 python-flask))
-
 (define-public python-flask-sqlalchemy
   (package
    (name "python-flask-sqlalchemy")
@@ -279,16 +242,14 @@ powerful language for representing information.")
         (base32
           "06qzgwk7j66k8ggx51i6wxx0f0zsppp7w4bh6gjd0cr9rfs86jn7"))))
   (build-system python-build-system)
-  (inputs
+  (propagated-inputs
    `(
      ("mysql" ,mysql)
      ("python-nose" ,python-nose)
      ("zlib" ,zlib)
      ("openssl" ,openssl)
      ("libgcrypt" ,libgcrypt)
-     ))
-  (propagated-inputs
-   `(("python-setuptools" ,python-setuptools)
+     ("python-setuptools" ,python-setuptools)
      ))
   (arguments
    `(#:tests? #f))   ; wants a running MySQL server
@@ -357,32 +318,91 @@ project)")
   (description #f)
   (license #f)))
 
-(define-public python2-piddle
+(define-public python2-pil
+  (package
+    (name "python2-pil")
+    (version "1.1.6")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (string-append
+              "http://effbot.org/downloads/Imaging-"
+              version ".tar.gz"))
+        (sha256
+          (base32
+            "141zidl3s9v4vfi3nsbg42iq1lc2a932gprqr1kij5hrnn53bmvx"))
+       (modules '((guix build utils)))
+       (snippet
+        ;; Adapt to newer freetype. As the package is unmaintained upstream,
+        ;; there is no use in creating a patch and reporting it.
+        '(substitute* "_imagingft.c"
+           (("freetype/")
+            "freetype2/")))))
+    (build-system python-build-system)
+    (inputs
+      `(("freetype" ,freetype)
+        ("libjpeg" ,libjpeg)
+        ("libtiff" ,libtiff)
+        ("python-setuptools" ,python-setuptools)
+        ("zlib" ,zlib)))
+    (arguments
+     ;; Only the fork python-pillow works with Python 3.
+     `(#:python ,python-2
+       #:tests? #f ; no check target
+       #:phases
+         (alist-cons-before
+          'build 'configure
+          ;; According to README and setup.py, manual configuration is
+          ;; the preferred way of "searching" for inputs.
+          ;; lcms is not found, TCL_ROOT refers to the unavailable tkinter.
+          (lambda* (#:key inputs #:allow-other-keys)
+            (let ((jpeg (assoc-ref inputs "libjpeg"))
+                  (zlib (assoc-ref inputs "zlib"))
+                  (tiff (assoc-ref inputs "libtiff"))
+                  (freetype (assoc-ref inputs "freetype")))
+              (substitute* "setup.py"
+                (("JPEG_ROOT = None")
+                 (string-append "JPEG_ROOT = libinclude(\"" jpeg "\")"))
+                (("ZLIB_ROOT = None")
+                 (string-append "ZLIB_ROOT = libinclude(\"" zlib "\")"))
+                (("TIFF_ROOT = None")
+                 (string-append "TIFF_ROOT = libinclude(\"" tiff "\")"))
+                (("FREETYPE_ROOT = None")
+                 (string-append "FREETYPE_ROOT = libinclude(\""
+                                freetype "\")")))))
+          %standard-phases)))
+    (home-page "http://www.pythonware.com/products/pil/")
+    (synopsis "Python Imaging Library")
+    (description "The Python Imaging Library (PIL) adds image processing
+capabilities to the Python interpreter.")
+    (license (license:x11-style
+               "file://README"
+               "See 'README' in the distribution."))))
+
+(define-public python2-piddle-gn
   (package
     (name "python2-piddle")
-    (version "1.0.15")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (string-append
-             ;; http://sourceforge.net/projects/numpy/files/Old%20Numarray/1.5.2/numarray-1.5.2.tar.gz/download
-             "mirror://sourceforge/piddle/piddle-" version ".zip"
-             ))
-       ;; (file-name (string-append name "-" version ".zip"))
-       (sha256
-        (base32
-         "0jaxfsrcgqb5cf2wznxnpdws5khlrdixmg85lrhq2zl9cy6dfdya"))))
-    (native-inputs
-     `(("unzip" ,unzip)))
+    (version "1.0.15-gn")
+    (source (origin
+     (method url-fetch)
+     (uri (string-append
+           "http://files.genenetwork.org/software/contrib/piddle-"
+version ".tgz"))
+     (sha256
+      (base32
+       "05gjnn31v7p0kh58qixrpcizcxqf3b7zv4a5kk8nsmqwgxh0c6gq"))))
 
     (build-system python-build-system)
-    ;; (native-inputs
-    ;; `(("python-setuptools" ,python-setuptools)))
+    (native-inputs
+     `(("python2-setuptools" ,python2-setuptools)))
+    (propagated-inputs
+     `(("python2-pil" ,python2-pil)))
     (arguments
-     `(#:python ,python-2
-       #:tests? #f
-       ))   ; no 'setup.py test' really!
-    (home-page "http://www.numpy.org/")
+     `(
+       #:python ,python-2
+       #:tests? #f   ; no 'setup.py test' really!
+    ))
+    (home-page #f)
     (synopsis "Canvas drawing library for python2 (old!)")
     (description #f)
     (license #f)))
@@ -423,7 +443,6 @@ project)")
      (origin
        (method url-fetch)
        (uri (string-append
-             ;; http://sourceforge.net/projects/numpy/files/Old%20Numarray/1.5.2/numarray-1.5.2.tar.gz/download
              "mirror://sourceforge/numpy/numarray-" version ".tar.gz"
              ))
        (file-name (string-append name "-" version ".tar.gz"))
@@ -431,8 +450,6 @@ project)")
         (base32
          "0x1i4j7yni7k4p9kjxs1lgln1psdmyrz65wp2yr35yn292iw2vbg"))))
     (build-system python-build-system)
-    ;; (native-inputs
-    ;; `(("python-setuptools" ,python-setuptools)))
     (arguments
      `(#:python ,python-2
        #:tests? #f))   ; no 'setup.py test' really!
