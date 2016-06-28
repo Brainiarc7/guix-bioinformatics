@@ -22,8 +22,8 @@
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gnu packages llvm)
+  #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
-  #:use-module (guix licenses)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages libffi)
   #:use-module (guix download)
