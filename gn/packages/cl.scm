@@ -588,17 +588,15 @@ code analysis tools.")
          "0ikfq0gxac8xpvxj23l4hk8f12ydx48fljgrz1gl9xp0ks704nsm"))))
     (native-inputs
      `(("python" ,python-wrapper)
-       ("perl"   ,perl)
+       ("perl" ,perl)
        ("libffi" ,libffi)
        ("zlib" ,zlib)))
     (arguments
      `(#:configure-flags '("-DCMAKE_SKIP_BUILD_RPATH=FALSE"
+                           "-DCMAKE_BUILD_TYPE=Release"
                            "-DCMAKE_BUILD_WITH_INSTALL_RPATH=FALSE"
                            "-DLLVM_ENABLE_PIC=ON"
-                           ;"-DLLVM_ENABLE_RTTI=ON"
-                           "-DLLVM_ENABLE_WERROR=OFF"
-                           ;;"-DLLVM_REQUIRES_RTTI=ON"
-                           )))))
+                           "-DLLVM_ENABLE_WERROR=OFF")))))
 
 (define-public clang-runtime-3.8
   (clang-runtime-from-llvm
