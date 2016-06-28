@@ -355,7 +355,6 @@
        ("atlas" ,atlas)
        ("boost" ,boost)
        ("opencl-headers" ,opencl-headers)
-       ("ocl-icd" ,ocl-icd)
        ("enca" ,enca)
        ("clang" ,clang-3.8)
        ("clang-runtime-3.8" ,clang-runtime-3.8)
@@ -431,6 +430,57 @@
     This free ICD Loader can load any (free or non free) ICD")
     (license (list license:gpl2 
                    license:ruby))))
+                   
+(define-public khronos-icd-loader
+(let ((commit "4defeae"))
+  (package
+    (name "khronos-icd-loader")
+    (version (string-append "2.1-" commit ))
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+              (url "https://github.com/KhronosGroup/OpenCL-ICD-Loader.git")
+              (commit commit)))
+              (file-name (string-append name "-" commit))
+              (sha256
+               (base32
+                "036mz2spgfkmb3y2fxw9yaqbimdhcr9n3gbajibz2w33aj4b8yfy"))))
+(native-inputs `(("autoconf" ,autoconf)
+                ("automake" ,automake)
+                ("libtool" ,libtool)
+                ("pkg-config" ,pkg-config)))
+(inputs        `(("python" ,python-2)
+               ("boost" ,boost)
+               ("dbus" ,dbus)
+               ("clang" ,clang-3.8)
+               ("clang-runtime" ,clang-runtime-3.8)
+               ("enca" ,enca)
+               ("eudev" ,eudev)
+               ("fftw-openmpi" ,fftw-openmpi)
+               ("glew" ,glew)
+               ("hwloc" ,hwloc)
+               ("libcap" ,libcap)
+               ("libjpeg" ,libjpeg)
+               ("libltdl" ,libltdl)
+               ("libtiff" ,libtiff)
+               ("llvm" ,llvm-3.8)
+               ("mesa-utils" ,mesa-utils)
+               ("openmpi" ,openmpi)
+               ("opencl-headers" ,opencl-headers)
+               ("perl" ,perl)
+               ("randrproto" ,randrproto)
+               ("libxrandr" ,libxrandr)
+               ("xineramaproto" ,xineramaproto)
+               ("libxinerama" ,libxinerama)
+               ("libxcursor" ,libxcursor)
+               ("fftw-openmpi" ,fftw-openmpi)))
+    (build-system cmake-build-system)
+    (arguments
+     `(#:tests? #f))                
+    (synopsis "The Khronos OpenCL ICDs (Installable Client Driver)")
+    (description "This package provides the Khronos OpenCL ICDs")
+    (home-page "https://www.khronos.org/registry/cl/")
+    (license (list license:gpl2)))))
                    
 (define-public llvm
   (package
@@ -606,3 +656,4 @@ code analysis tools.")
 (define-public clang-3.8
   (clang-from-llvm llvm-3.8 clang-runtime-3.8
                    "1ybcac8hlr9vl3wg8s4v6cp0c0qgqnwprsv85lihbkq3vqv94504"))
+
