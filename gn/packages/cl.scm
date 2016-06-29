@@ -431,7 +431,7 @@
     (license (list license:gpl2 
                    license:ruby))))
                    
-(define-public khronos-icd-loader
+(define-public khronos-icd-loader ;;Package status: Under review. Build failures.
 (let ((commit "4defeae"))
   (package
     (name "khronos-icd-loader")
@@ -475,8 +475,6 @@
                ("libxcursor" ,libxcursor)
                ("fftw-openmpi" ,fftw-openmpi)))
     (build-system cmake-build-system)
-    (arguments
-     `(#:tests? #f))                
     (synopsis "The Khronos OpenCL ICDs (Installable Client Driver)")
     (description "This package provides the Khronos OpenCL ICDs")
     (home-page "https://www.khronos.org/registry/cl/")
